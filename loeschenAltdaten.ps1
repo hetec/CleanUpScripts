@@ -411,11 +411,12 @@ function writeMetaInfo(){
     Write-Host  "Typ: $typ"
     Out-File -FilePath $logPath -Append -InputObject "#Pfad: $Pfad "
     Out-File -FilePath $logPath -Append -InputObject "#Loeschen: $loeschen "
-     Out-File -FilePath $logPath -Append -InputObject "#Type: $typ "
+    Out-File -FilePath $logPath -Append -InputObject "#Type: $typ "
+    Out-File -FilePath $logPath -Append -InputObject "#ErsteVerzEbeneErhalten: $ErsteVerzEbeneErhalten "
     Out-File -FilePath $logPath -Append -InputObject ""
-     Out-File -FilePath $runScript -Append -InputObject "#Pfad: $Pfad "
+    Out-File -FilePath $runScript -Append -InputObject "#Pfad: $Pfad "
     Out-File -FilePath $runScript -Append -InputObject ""
-     Out-File -FilePath $runScript -Append -InputObject "#Type: $typ "
+    Out-File -FilePath $runScript -Append -InputObject "#Type: $typ "
     Out-File -FilePath $runScript -Append -InputObject ""
     Write-Host  "AKTUELLES DATUM $aktuellesdatum"
     Out-File -FilePath $logPath -Append -InputObject "#AKTUELLES DATUM $aktuellesdatum"
@@ -509,8 +510,6 @@ function datumZuruecksetzen (){
     
 }
 
-################ NEU
-
 
 function pruefeTopLevelVerz(){
     $tmpList = New-Object System.Collections.ArrayList
@@ -571,14 +570,11 @@ writeMetaInfo
 #Funktionsaufrufe und Dateiexporte
 findeAlteOrder $zuPruefendesDir
 
-######## NEU
 
 if($ErsteVerzEbeneErhalten -eq "true"){
    pruefeTopLevelVerz        
 }
 
-
-######## NEU
 
 
 Write-Host "Exportiere Daten ... `r`n"
