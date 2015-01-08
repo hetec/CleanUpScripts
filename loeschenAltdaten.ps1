@@ -84,7 +84,7 @@ if((Test-Path variable:\o) -eq $true){Clear-Variable o -Force}
 $global:arr = @() #Zwischenspeicher zu löschender Dir
 $global:o = @() #Zwischenspeicher zu löschender Dir - formatiert für Ausgabe
 $eltern = @{} #Speichert Änderungsdatum von Elternelementen von gelöschten Dir
-
+$global:gesamtGroesse = 0.0
 
 $logName = (Get-Item -Path $Pfad -Force).Name.ToString()
 #Write-Host -ForegroundColor white "$basisPfad\loeschskripte\tmpLoeschscript_$logName.ps1"
@@ -345,9 +345,11 @@ function isInList($eingang, $list){
 function makeTable ($i){
     $owner = (Get-Acl $i).Owner
     if($typ -eq "lat"){
-    $time = (Get-Item $i | select LastAccessTime) 
+    $time = (Get-Item $i).LastAccessTime
+    #$time = (Get-Item $i | select LastAccessTime) 
     }elseif($typ -eq "lwt"){
-    $time = (Get-Item $i | select LastWriteTime) 
+    #$time = (Get-Item $i | select LastWriteTime) 
+    $time = (Get-Item $i).LastWriteTime
     }
     $leng = [int]($i.Length - 1)
     #Write-Host -BackgroundColor red $leng
@@ -358,11 +360,18 @@ function makeTable ($i){
     #Write-Host -BackgroundColor red $istr
     $j= $istr.SubString($start)
 
-    $tmpBez = ("   Veraltet: $time --- Owner: $owner")
-    $tmpPath = ("#> Write-Host 'Lösche: $i'; Remove-Item -Path '$i' -Recurse -force;  <#") 
+    $size = getSize($i)
+
+    $global:gesamtGroesse += $size
+
+    $sf = "{0:N5}" -f ($size / 1MB)
+
+    $tmpPath = ("#> Remove-Item -Path '$i' -Recurse -force;  <#") 
     $obj = New-Object PSObject
     $obj | Add-Member NoteProperty Löschbefehl($tmpPath)
-    $obj | Add-Member NoteProperty Notiz($tmpBez)
+    $obj | Add-Member NoteProperty Datum($time)
+    $obj | Add-Member NoteProperty Besizter($owner)
+    $obj | Add-Member NoteProperty Größe($sf + " MB")
     $global:o += @($obj)
 }
 
@@ -397,6 +406,7 @@ function checkLogPath(){
 
 
 function writeMetaInfo(){
+ 
     Write-Host  "`n`n-- NEUER PROZESS -----------------------------------------`n"
     Out-File -FilePath $logPath -InputObject "#### LOG FILE $logName ####"
     Out-File -FilePath $logPath -Append -InputObject ""
@@ -410,11 +420,11 @@ function writeMetaInfo(){
     Write-Host  "Typ: $typ"
     Out-File -FilePath $logPath -Append -InputObject "#Pfad: $Pfad "
     Out-File -FilePath $logPath -Append -InputObject "#Loeschen: $loeschen "
-     Out-File -FilePath $logPath -Append -InputObject "#Type: $typ "
+    Out-File -FilePath $logPath -Append -InputObject "#Type: $typ "
     Out-File -FilePath $logPath -Append -InputObject ""
-     Out-File -FilePath $runScript -Append -InputObject "#Pfad: $Pfad "
+    Out-File -FilePath $runScript -Append -InputObject "#Pfad: $Pfad "
     Out-File -FilePath $runScript -Append -InputObject ""
-     Out-File -FilePath $runScript -Append -InputObject "#Type: $typ "
+    Out-File -FilePath $runScript -Append -InputObject "#Type: $typ "
     Out-File -FilePath $runScript -Append -InputObject ""
     Write-Host  "AKTUELLES DATUM $aktuellesdatum"
     Out-File -FilePath $logPath -Append -InputObject "#AKTUELLES DATUM $aktuellesdatum"
@@ -506,10 +516,25 @@ function datumZuruecksetzen (){
     
 }
 
-function getSize($directory){
-    $size = Get-ChildItem $directory -Recurse -Force| Measure-Object -Property Length -Sum
-    $size = "{0:N2}" -f ($size.sum / 1MB) + " MB"
+function getSize($element){
+    $size = 0;
+    if(Test-Path $element -PathType Container){
+        $size = Get-ChildItem $element -Recurse -Force| Measure-Object -Property Length -Sum
+        $size = $size.sum
+    }else{
+        $size = (Get-Item $element -Force | Measure-Object -Property Length -Sum)
+        $size = $size.sum
+    }
     return $size
+}
+
+function getEntireSize(){
+    $gesamt = 0
+    foreach($s in $global:arr){
+        $gesamt += getSize($s)
+
+    }
+    return $gesamt
 }
 
 
@@ -539,6 +564,8 @@ exportierenLöschbefehle $Global:arr
 #Out-File -FilePath $logPath -Append -InputObject "`n`ncd $Pfad"
 Out-File -FilePath $logPath -Append -InputObject "<#"
 $global:o | Format-List | Out-File -FilePath $logPath -Append -Width 1000
+$global:gesamtGroesse = $global:gesamtGroesse / 1024 / 1024 / 1024
+Out-File -FilePath $logPath -Append -InputObject "Gesamtgroesse = $global:gesamtGroesse GB"
 Out-File -FilePath $logPath -Append -InputObject "#>"
 #Out-File -FilePath $runScript -Append -InputObject "`n`ncd $Pfad"
 Out-File -FilePath $runScript -Append -InputObject "<#"
