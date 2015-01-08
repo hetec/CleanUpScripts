@@ -4,6 +4,7 @@
 param(
     [int]$Alter,
     [string]$Pfad,
+    [string]$ErsteVerzEbeneErhalten,
     [string]$loeschen,
     [string]$typ
 )
@@ -476,7 +477,9 @@ function datumEleternelementeSpeichern(){
     foreach($item in $global:arr){
         echo $global:arr
         if($item){
-            $parent = (Get-Item $item -Force).parent.fullname
+            if(Test-Path $item -PathType Container){          
+                $parent = (Get-Item $item -Force).parent.fullname
+            }
             $lwtStamp = (Get-Item $parent -Force).LastWriteTime
             if(!$eltern.Get_Item(($parent.toString()))){
                 $eltern.Add($parent, $lwtStamp)
@@ -506,6 +509,47 @@ function datumZuruecksetzen (){
     
 }
 
+################ NEU
+
+
+function pruefeTopLevelVerz(){
+    $tmpList = New-Object System.Collections.ArrayList
+    $storeParents = @()
+    $storeNew = New-Object System.Collections.ArrayList
+    $rootPath = (Get-Item $zuPruefendesDir).FullName.ToString()
+    Write-Host -ForegroundColor Yellow "root: $rootPath"
+    foreach($i in $Global:arr){
+        $tmpList.Add($i)
+    }
+    $Global:arr = @()
+    foreach($subpath in $tmpList){
+        $currentItem = Get-Item $subpath
+        $parent = Get-Item $currentItem.PSParentPath 
+        if(($parent.FullName.ToString()) -eq $rootPath){
+            $content = Get-ChildItem $currentItem
+            $storeParents += $currentItem
+            foreach($file in $content){
+                $full = $file.FullName
+                $storeNew.Add($full) 
+            }
+        }
+    }
+
+    Write-Host -ForegroundColor Yellow "Liste ausgeben"
+    Write-Host -ForegroundColor Yellow "Anzal Elemente $tmpList.Count"
+
+    foreach($e in $storeParents){ 
+        $index = $tmpList.IndexOf($e.ToString())
+        $tmpList.RemoveAt($index)
+    }
+
+    $tmpList.Add($storeNew)
+
+    foreach($i in $tmpList){
+        $Global:arr += $i
+    } 
+}
+
 #############################################################################################################################################################
 #############################################################################################################################################################
 ##### Programmablauf
@@ -526,6 +570,16 @@ writeMetaInfo
 
 #Funktionsaufrufe und Dateiexporte
 findeAlteOrder $zuPruefendesDir
+
+######## NEU
+
+if($ErsteVerzEbeneErhalten -eq "true"){
+   pruefeTopLevelVerz        
+}
+
+
+######## NEU
+
 
 Write-Host "Exportiere Daten ... `r`n"
 exportierenLöschbefehle $Global:arr
@@ -593,7 +647,7 @@ if($logName -like "Scratch"){
 
     Out-File -FilePath $logPath -Append -InputObject "`r`nESET Scan wurde für $logName angestoßen! Siehe Logverzeichnis!"
 
-    Start-Process "C:\Program Files\ESET\ESET NOD32 Antivirus\ecls.exe" -ArgumentList "H:\scratch", "/log-file=$basisPfad\logs_$logName\ESET_LOG_$dateStemp.txt"
+    #Start-Process "C:\Program Files\ESET\ESET NOD32 Antivirus\ecls.exe" -ArgumentList "H:\scratch", "/log-file=$basisPfad\logs_$logName\ESET_LOG_$dateStemp.txt"
 }
 
 ) | Out-Null
