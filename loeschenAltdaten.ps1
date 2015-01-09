@@ -373,17 +373,30 @@ function makeTable ($i){
 
     $global:gesamtGroesse += $size
 
-    $sf = "{0:N3}" -f ($size / 1MB)
+    $sf = groesseAusgabeAnpassen($size)
 
     $tmpPath = ("#> Remove-Item -Path '$i' -Recurse -force;  <#") 
     $obj = New-Object PSObject
     $obj | Add-Member NoteProperty Löschbefehl($tmpPath)
     $obj | Add-Member NoteProperty Datum($time)
     $obj | Add-Member NoteProperty Besizter($owner)
-    $obj | Add-Member NoteProperty Größe($sf + " MB")
+    $obj | Add-Member NoteProperty Größe($sf)
     $global:o += @($obj)
 }
 
+function groesseAusgabeAnpassen($s){
+    $s_formatiert = 0
+    if(($s / 1024) -lt 1){
+        $s_formatiert = "{0:N0}" -f $s + " B"
+    }elseif(($s / 1024 / 1024) -lt 1){
+        $s_formatiert = "{0:N0}" -f ($s / 1KB) + " KB"
+    }elseif(($s / 1024 / 1024 / 1024) -lt 1){
+        $s_formatiert = "{0:N0}" -f ($s / 1MB) + " MB"
+    }elseif(($s / 1024 / 1024 / 1024 /1024) -lt 1){
+        $s_formatiert = "{0:N0}" -f ($s / 1GB) + " GB"
+    }
+    return $s_formatiert
+}
 
 #Exportfunktion
 function exportierenLöschbefehle () {
@@ -442,9 +455,9 @@ function writeMetaInfo(){
     Out-File -FilePath $runScript -Append -InputObject ""
     Out-File -FilePath $runScript -Append -InputObject "#Type: $typ "
     Out-File -FilePath $runScript -Append -InputObject ""
-    Write-Host  "AKTUELLES DATUM: " $a_date
+    Write-Host  "AKTUELLES DATUM:  " $a_date
     Out-File -FilePath $logPath -Append -InputObject "#AKTUELLES DATUM $a_date"
-    Write-Host  "KRITISCHES DATUM" $v_date "`n"
+    Write-Host  "KRITISCHES DATUM: " $v_date "`n"
     Out-File -FilePath $logPath -Append -InputObject "#KRITISCHES DATUM $v_date"
 }
 
@@ -629,8 +642,8 @@ exportierenLöschbefehle $Global:arr
 #Out-File -FilePath $logPath -Append -InputObject "`n`ncd $Pfad"
 Out-File -FilePath $logPath -Append -InputObject "<#"
 $global:o | Format-List | Out-File -FilePath $logPath -Append -Width 1000
-$global:gesamtGroesse = $global:gesamtGroesse / 1024 / 1024 / 1024
-Out-File -FilePath $logPath -Append -InputObject "Gesamtgroesse = $global:gesamtGroesse GB"
+$global:gesamtGroesse = groesseAusgabeAnpassen($global:gesamtGroesse)
+Out-File -FilePath $logPath -Append -InputObject "Gesamtgroesse = $global:gesamtGroesse"
 Out-File -FilePath $logPath -Append -InputObject "#>"
 #Out-File -FilePath $runScript -Append -InputObject "`n`ncd $Pfad"
 Out-File -FilePath $runScript -Append -InputObject "<#"
