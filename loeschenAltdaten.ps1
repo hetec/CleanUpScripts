@@ -26,17 +26,26 @@ if(($Pfad.Length -le 0)  -and ($Alter -gt 0)){
     $Pfad = '.\'
 }
 
-if($typ -ne "lwt"){
+if($typ -eq "lat"){
     $typ = "lat"
-    #Write-Host -ForegroundColor White "`r`n$typ`r`n"
-}else{
+}elseif($typ -eq "lwt"){
     $typ = "lwt"
-    #Write-Host -ForegroundColor White "`r`n$typ`r`n"
+}elseif($typ -ne "lwt" -or $typ -ne "lat"){
+    $typ = "lwt" #Default
+    Write-Host -ForegroundColor Red "`r`nEs wurde kein Typ angegeben!`r`nDer Standardtyp (lwt) wird verwendet!"
+}
+
+if($ErsteVerzEbeneErhalten -ne "true" -or $ErsteVerzEbeneErhalten -ne "false"){
+    $ErsteVerzEbeneErhalten = $false #Default
+}elseif($ErsteVerzEbeneErhalten -eq "true"){
+    $ErsteVerzEbeneErhalten = $true
+}elseif($ErsteVerzEbeneErhalten -eq "false"){
+    $ErsteVerzEbeneErhalten = $false
 }
 
 if(($loeschen -ne "false") -and ($loeschen -ne "true")){
-     Write-Host -ForegroundColor Red "`r`nBitte Wert für -loeschen angeben! 'true' oder 'false'"
-     break
+     Write-Host -ForegroundColor Red "`r`nKein Wert fuer loeschen angegeben: Standard wird versendet: 'false'"
+     $loeschen = "false"
 }elseif($loeschen -eq "true"){
     Write-Host -ForegroundColor Yellow "`r`nAchtung! Löschen ist aktiv!"
     $loeschen = $true
@@ -185,7 +194,6 @@ function pruefeVeraltetAlleElemente_lwt($inhalt){
     
  
     
-    Write-Host -ForegroundColor green "`n`nSUCHE ABGESCHLOSSEN --> kein Kindelemente mehr verfügbar!`n"
     Write-Host "`n-- Resultat: ----------------------------------------------`n"
     #Write-Host "$resultList"
     $resultList | sort -Descending |Format-List | Out-Host
@@ -365,7 +373,7 @@ function makeTable ($i){
 
     $global:gesamtGroesse += $size
 
-    $sf = "{0:N5}" -f ($size / 1MB)
+    $sf = "{0:N3}" -f ($size / 1MB)
 
     $tmpPath = ("#> Remove-Item -Path '$i' -Recurse -force;  <#") 
     $obj = New-Object PSObject
@@ -408,6 +416,11 @@ function checkLogPath(){
 
 function writeMetaInfo(){
  
+    $a_date = Get-Date
+    $v_date = $a_date.AddDays((-1) * $Alter)
+    $v_date = $v_date.ToShortDateString()
+    $a_date = $a_date.ToShortDateString()
+    
     Write-Host  "`n`n-- NEUER PROZESS -----------------------------------------`n"
     Out-File -FilePath $logPath -InputObject "#### LOG FILE $logName ####"
     Out-File -FilePath $logPath -Append -InputObject ""
@@ -419,6 +432,7 @@ function writeMetaInfo(){
     Write-Host  "Pfad: $Pfad"
     Write-Host  "Löschen: $loeschen"
     Write-Host  "Typ: $typ"
+    Write-Host  "ErsteVerzEbeneErhalten: $ErsteVerzEbeneErhalten"
     Out-File -FilePath $logPath -Append -InputObject "#Pfad: $Pfad "
     Out-File -FilePath $logPath -Append -InputObject "#Loeschen: $loeschen "
     Out-File -FilePath $logPath -Append -InputObject "#Type: $typ "
@@ -428,10 +442,10 @@ function writeMetaInfo(){
     Out-File -FilePath $runScript -Append -InputObject ""
     Out-File -FilePath $runScript -Append -InputObject "#Type: $typ "
     Out-File -FilePath $runScript -Append -InputObject ""
-    Write-Host  "AKTUELLES DATUM $aktuellesdatum"
-    Out-File -FilePath $logPath -Append -InputObject "#AKTUELLES DATUM $aktuellesdatum"
-    Write-Host  "KRITISCHES DATUM" $kritischesDatum "`n"
-    Out-File -FilePath $logPath -Append -InputObject "#KRITISCHES DATUM $kritischesDatum"
+    Write-Host  "AKTUELLES DATUM: " $a_date
+    Out-File -FilePath $logPath -Append -InputObject "#AKTUELLES DATUM $a_date"
+    Write-Host  "KRITISCHES DATUM" $v_date "`n"
+    Out-File -FilePath $logPath -Append -InputObject "#KRITISCHES DATUM $v_date"
 }
 
 ###################################################################################################################
