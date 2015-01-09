@@ -1,3 +1,6 @@
+README - ALTDATENLOESCHUNG
+==========================
+
 Anwendungs Hinweise
 
 !!! Das Update der  LastAccessTime muss in der Regestry unter dem Pfad: 
@@ -14,16 +17,29 @@ VERSION 1 -- BEI DIRKETER VERWENDUNG IN DER SHELL
 	2.1) -Alter: Angabe in Tagen. Entspricht dem Alter der Ordner im -Pfad bezogen auf aktuelles Datum
 	2.2) -Pfad: Angabe des gewünschten Pfades in " "
 	2.3) -loeschen: Angabe ob gelöscht werden soll ("true") oder nur geloggt ("false")
-	2.4) -type: Angabe von "lwt" für LastWriteTime oder "lat" für LastAccessTime möglich. "lat" ist als Standard angegeben
+	2.4) -typ: Angabe von "lwt" für LastWriteTime oder "lat" für LastAccessTime möglich. "lat" ist als Standard 
+	2.5) -ErsteVerzEbeneErhalten: Gibt an ob die erste Verzeichnisebenen unter dem angegebenen Sourceverzeichnis immer
+	      erhalten bleibt (true) oder auch gelöscht wird (false). Bei true werden die Verzeichnisse jedoch durch das
+	      Löschen aktuallisiert (auch LWT). Z.B. um automatisch gemountete Nutzerverzeichnisse nicht während einer
+	      Anmeldung zu löschen usw. 
+
+	Standardwerte der Parameter:
+	-Alter 60
+	-Pfad ".\"
+	-loeschen "false"
+	-typ "lwt"
+	-ErsteVerzErhalten "false"
 
 	Beispiel:
 
-	PS C:\scripte\zeitlicheLöschungScratchbereiche\loeschenAltdaten.ps1 -Alter 60 -Pfad "H:\Scratch" -loeschen "false"
-        PS C:\scripte\zeitlicheLöschungScratchbereiche>loeschenAltdaten.ps1 -Alter 365 -Pfad 'F:\Scratchold' -loeschen 'false' -typ 'lwt'
+	PS C:\scripte\zeitlicheLöschungScratchbereiche\loeschenAltdaten.ps1 -Alter 60 -Pfad "H:\Scratch" -loeschen "false" -typ "lwt" -ErsteVerzEbeneErhalten "true"
+        PS C:\scripte\zeitlicheLöschungScratchbereiche>loeschenAltdaten.ps1 -Alter 365 -Pfad 'F:\Scratchold' -loeschen 'false' -typ 'lwt' -ErsteVerzEbeneErhalten "false"
 
-4) Veraltete Daten, die gelöscht werden sollen, werden in 'loeschskripte' temporär zwischengespeichert (immer nur das aktuellste File)
+4) Veraltete Daten, die gelöscht werden sollen, werden in 'loeschskripte' temporär zwischengespeichert 
+   (immer nur das aktuellste File)
 5) Logdatein werden nach Verzeichnisnamen angelegt -> im Basispfad C:\scripte\zeitlicheLöschungScratchbereiche
-6) Pfad für Logdateien ändern: Änderung im Skript möglich. Hier muss die Variable $basisPfad gändert werden. Die weiteren Untervereichnisse werden automatisch angepasst.
+6) Pfad für Logdateien ändern: Änderung im Skript möglich. Hier muss die Variable $basisPfad gändert werden. 
+   Die weiteren Untervereichnisse werden automatisch angepasst.
 
 VERSION 2 -- BEI VERWENDUNG IN EINEM TASK
 -----------------------------------------
