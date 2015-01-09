@@ -386,7 +386,9 @@ function makeTable ($i){
 
 function groesseAusgabeAnpassen($s){
     $s_formatiert = 0
-    if(($s / 1024) -lt 1){
+    if($s -le 0){
+        $s_formatiert = "0 B"
+    }elseif(($s / 1024) -lt 1){
         $s_formatiert = "{0:N0}" -f $s + " B"
     }elseif(($s / 1024 / 1024) -lt 1){
         $s_formatiert = "{0:N0}" -f ($s / 1KB) + " KB"
@@ -456,9 +458,13 @@ function writeMetaInfo(){
     Out-File -FilePath $runScript -Append -InputObject "#Type: $typ "
     Out-File -FilePath $runScript -Append -InputObject ""
     Write-Host  "AKTUELLES DATUM:  " $a_date
-    Out-File -FilePath $logPath -Append -InputObject "#AKTUELLES DATUM $a_date"
+    Out-File -FilePath $logPath -Append -InputObject "`n#AKTUELLES DATUM $a_date"
     Write-Host  "KRITISCHES DATUM: " $v_date "`n"
-    Out-File -FilePath $logPath -Append -InputObject "#KRITISCHES DATUM $v_date"
+    Out-File -FilePath $logPath -Append -InputObject "`n#KRITISCHES DATUM $v_date"
+    Write-Host  "`n" 
+    Out-File -FilePath $logPath -Append -InputObject  "`n`nHINWEIS: Die Angegebenen Einheiten werden mit Dezimalpräfix (MB, GB usw) dargestellt, um windowstypische Merkmale einzuhalten! `n"
+    Out-File -FilePath $logPath -Append -InputObject  "         Dir Umrechnung erfoglt abe nach den 2er Potenzen und nicht nach Dezimalstellen und entspricht somit KiB, MiB und GiB `n"
+    
 }
 
 ###################################################################################################################
@@ -587,11 +593,28 @@ function pruefeTopLevelVerz(){
 }
 
 
+<#
+function getSize($element){
+    $size = 0;
+    if(Test-Path $element -PathType Container){
+        #$size = Get-ChildItem $element -Recurse -Force| Measure-Object -Property Length -Sum
+        Get-ChildItem $element -Recurse -Force| Where-Object {!$_.PSisContainer} | ForEach-Object{
+              $size += (Measure-Object -Property Length -Sum).Sum
+        }
+        #$size = $size.sum
+    }else{
+        $size = (Get-Item $element -Force | Measure-Object -Property Length -Sum)
+        $size = $size.sum
+    }
+    return $size
+}
+#>
 
 function getSize($element){
     $size = 0;
     if(Test-Path $element -PathType Container){
-        $size = Get-ChildItem $element -Recurse -Force| Measure-Object -Property Length -Sum
+        #$size = Get-ChildItem $element -Recurse -Force| Measure-Object -Property Length -Sum
+        $size = Get-ChildItem $element -Recurse -Force| Where-Object {!$_.PSisContainer} | Measure-Object -Property Length -Sum
         $size = $size.sum
     }else{
         $size = (Get-Item $element -Force | Measure-Object -Property Length -Sum)
