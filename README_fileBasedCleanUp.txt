@@ -8,6 +8,10 @@ To determine the age of a file last write time is used.
 The script also handles some problems with special characters in file paths and duplicated files while copying.
 The results and errors are logged.
 
+It is necessary to run the script PwCreator before using the main script. The user must hava a valid mail account. This
+creates a password file which is used by the script to automatically send mails. This has to be repeated if the user changes or the
+account gets invalid!
+
 Steps to run the script in the console
 -------------------------------------------------
 1) Open PowerShell as administrator

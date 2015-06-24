@@ -6,6 +6,11 @@ README - ALTDATENLOESCHUNG
 
 Skript löscht nur Ordner, in denen sich keine aktuelleren Datein oder Unterordner befinden. Dies erfolgt nach dem letzten Änderungsdatum
 
+Um Mails versenden zu können muss mit einem Nutzer mit Mail-Account das Script PwCreator ausgeführt werden. Dieses erzeugt eine
+Passwortdatei. Ist erneut notwendig wenn sich der Nutzer ändert.
+
+Es muss ein Passwort 
+
 VERSION 1 -- BEI DIRKETER VERWENDUNG IN DER SHELL
 -------------------------------------------------
 1) Skript in PowerShell bei Ausführung als Admin öffnen
